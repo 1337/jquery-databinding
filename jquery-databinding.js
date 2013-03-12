@@ -3,24 +3,38 @@
     $.fn.dataBinding = function () {
         var valueCache = [],
             theThing = this;
+
+        theThing.endpoint = theThing.username = theThing.password = '';
         
-        function updateDB(endpoint, data, callback) {
+        function updateDB(endpoint, data, callback, errorCallback) {
             // upstream
+            callback = callback || function () {};
+            errorCallback = errorCallback || function () {};
+
             if (endpoint && data) {
                 $.ajax({
                     /* ... */
-                    success: callback
+                    username: theThing.username,
+                    password: theThing.password,
+                    cache: false,
+                    success: callback,
+                    error: errorCallback
                 });
             }
         }
 
-        function updateUI($elem) {
+        function updateUI($elem, successCallback, errorCallback) {
             // downstream (initialisation)
+            successCallback = successCallback || function () {};
             $.ajax({
                 /* ... */
+                username: theThing.username,
+                password: theThing.password,
+                cache: false,
                 success: function (shittyData) {
-                    $elem.val(shittyData);
-                }
+                    successCallback(shittyData) && $elem.val(shittyData);
+                },
+                error: errorCallback
             });
         }
 
@@ -38,4 +52,4 @@
             });
         });
     };
-})(jQuery);
+})(window.jQuery || jQuery | $);
