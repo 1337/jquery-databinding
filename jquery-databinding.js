@@ -1,23 +1,28 @@
 (function ($) {
     /* some junk text about this script */
+
+    if (!($ && $.fn && $.fn.jquery)) {
+        return;  // you did something seriously wrong
+    }
+
     $.fn.dataBinding = function () {
         var valueCache = [],
-            theThing = this;
+            thePlugin = this;
 
-        theThing.endpoint = theThing.username = theThing.password = '';
+        thePlugin.endpoint = thePlugin.username = thePlugin.password = '';
         
-        function updateDB(endpoint, data, callback, errorCallback) {
+        function updateDB(endpoint, data, successCallback, errorCallback) {
             // upstream
-            callback = callback || function () {};
+            successCallback = successCallback || function () {};
             errorCallback = errorCallback || function () {};
 
             if (endpoint && data) {
                 $.ajax({
                     /* ... */
-                    username: theThing.username,
-                    password: theThing.password,
+                    username: thePlugin.username,
+                    password: thePlugin.password,
                     cache: false,
-                    success: callback,
+                    success: successCallback,
                     error: errorCallback
                 });
             }
@@ -28,11 +33,18 @@
             successCallback = successCallback || function () {};
             $.ajax({
                 /* ... */
-                username: theThing.username,
-                password: theThing.password,
+                username: thePlugin.username,
+                password: thePlugin.password,
                 cache: false,
                 success: function (shittyData) {
-                    successCallback(shittyData) && $elem.val(shittyData);
+                    if (!successCallback(shittyData)) {
+                        // i.e. if the callback returns 0 or anything usual
+                        try {
+                            $elem.val(shittyData);
+                        } catch (err) {
+                            $elem.text(shittyData);
+                        }
+                    }
                 },
                 error: errorCallback
             });
@@ -48,8 +60,9 @@
 
                 updateDB(data.endpoint || '', 
                          $this.val() || $this.text() || '', 
-                         data.callback || function () {});
+                         data.successCallback || function () {},
+                         data.errorCallback || function () {});
             });
         });
     };
-})(window.jQuery || jQuery | $);
+})(window.jQuery || window.$ || {});
