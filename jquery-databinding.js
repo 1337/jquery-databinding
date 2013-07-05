@@ -42,6 +42,7 @@
                 /* ... */
                 'username': data.username,
                 'password': data.password,
+                'data': data,  // TODO
                 cache: false,
                 success: function (shittyData) {
                     if (!successCallback(shittyData)) {

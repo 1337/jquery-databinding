@@ -9,7 +9,7 @@ How to use
 
 Database support
 ==================
-* Any database. (It doesn't matter)
+* Any key-value database. (It doesn't matter)
 
 
 Options
