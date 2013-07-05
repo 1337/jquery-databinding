@@ -7,12 +7,14 @@
     }
 
     $.fn.dataBinding = function (options) {
-        var defaults = {
+        var noop = function () {},
+            defaults = {
                 'endpoint': '',  // the REST API location
                 'username': '',
-                'password': ''
+                'password': '',
+                'successCallback': noop,
+                'errorCallback': noop
             },
-            noop = function () {},
             valueCache = [],
             thePlugin = this,
             updateDB,
@@ -20,28 +22,22 @@
 
         options = $.extend({}, defaults, options);
         
-        updateDB = function (endpoint, data, successCallback, errorCallback) {
+        updateDB = function (data, successCallback, errorCallback) {
             // send data upstream
-            successCallback = successCallback || noop;
-            errorCallback = errorCallback || noop;
-
-            if (endpoint && data) {
-                $.ajax({
-                    /* ... */
-                    'username': options.username,
-                    'password': options.password,
-                    'type': 'POST',
-                    'cache': false,
-                    'success': successCallback,
-                    'error': errorCallback
-                });
-            }
+            $.ajax({
+                /* ... */
+                'username': data.username,
+                'password': data.password,
+                'data': data,
+                'type': 'POST',
+                'cache': false,
+                'success': successCallback,
+                'error': errorCallback
+            });
         };
 
         updateUI = function ($elem, data, successCallback, errorCallback) {
             // send data downstream (show data)
-            successCallback = successCallback || noop;
-            errorCallback = errorCallback || noop;
             $.ajax({
                 /* ... */
                 'username': data.username,
@@ -50,11 +46,7 @@
                 success: function (shittyData) {
                     if (!successCallback(shittyData)) {
                         // i.e. if the callback returns 0 or anything usual
-                        try {
-                            $elem.val(shittyData);
-                        } catch (err) {
-                            $elem.text(shittyData);
-                        }
+                        $elem.html(shittyData);
                     } else {
                         errorCallback();
                     }
@@ -72,14 +64,11 @@
                 updateUI($this, data);
 
                 $this.blur(function () {
-                    updateDB(data.endpoint || options.endpoint || '',
-                             $this.val() || $this.text() || '',
-                             data.successCallback || noop,
-                             data.errorCallback || noop);
+                    updateDB(data, data.successCallback, data.errorCallback);
                 });
             } else {
                 localTarget.keyup(function () {
-                    $this.val(localTarget.val());
+                    $this.html(localTarget.html());
                 });
             }
         });
