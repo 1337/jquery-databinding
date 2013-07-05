@@ -22,17 +22,17 @@
 
         options = $.extend({}, defaults, options);
         
-        updateDB = function (data, successCallback, errorCallback) {
+        updateDB = function ($elem, data) {
             // send data upstream
             $.ajax({
                 /* ... */
                 'username': data.username,
                 'password': data.password,
-                'data': data,
+                'data': data,  // TODO
                 'type': 'POST',
                 'cache': false,
-                'success': successCallback,
-                'error': errorCallback
+                'success': data.successCallback,
+                'error': data.errorCallback
             });
         };
 
@@ -58,13 +58,18 @@
         return this.each(function () {
             var $this = $(this),
                 data = $.extend({}, options, $this.data()),
+                localTarget = [/* .length === 0 */];
+
+            if (data.endpoint.indexOf('/') === -1) {  // i.e. can't be a url
+                // odd, this can be multiple objects
                 localTarget = $(data.endpoint);
+            }
 
             if (!localTarget.length) {  // thing is remote
                 updateUI($this, data);
 
-                $this.blur(function () {
-                    updateDB(data, data.successCallback, data.errorCallback);
+                $this.keyup(function () {
+                    updateDB(data);
                 });
             } else {
                 localTarget.keyup(function () {
